@@ -266,9 +266,11 @@ DFprocessed.to_csv('processed.csv')
 Mask = {}
 for col in ('ONLINE_STORE', 'BRAND', 'YEAR','MONTH'):
     Mask[col] = {}
+    # string data:
     if DFprocessed[col].dtype == 'object':
         DFprocessed[col] = DFprocessed[col].str.lower()
         values = list(DFprocessed[col].unique())
+    # numerical data:
     else:
         values = list(DFprocessed[col].unique())
         list.sort(values)
@@ -299,7 +301,7 @@ def pltmask(xList,xMasks,yMask,labels = None,width = 0.2,saveFile=True):
     plt.show()
 
 
-# some shallow analysis:
+# some shallow/apparent analysis:
 pltmask(Mask['BRAND'].keys(),Mask['BRAND'].values(),Mask['SENTIMENT']['positive'],labels= ['brand','positive'])
 
 pltmask(Mask['BRAND'].keys(),Mask['BRAND'].values(),Mask['SENTIMENT']['negative'],labels= ['brand','negative'])
@@ -307,6 +309,10 @@ pltmask(Mask['BRAND'].keys(),Mask['BRAND'].values(),Mask['SENTIMENT']['negative'
 pltmask(Mask['ONLINE_STORE'].keys(),Mask['ONLINE_STORE'].values(),Mask['SENTIMENT']['negative'],labels= ['ONLINE_STORE','negative'])
 
 pltmask(Mask['YEAR'].keys(),Mask['YEAR'].values(),Mask['SENTIMENT']['negative']*Mask['BRAND']['pampers'],labels= ['YEAR','pampers-negative'])
+
+pltmask(Mask['MONTH'].keys(),Mask['MONTH'].values(),Mask['SENTIMENT']['negative']*Mask['BRAND']['pampers'],labels= ['MONTH','pampers-negative'])
+
+pltmask(Mask['MONTH'].keys(),Mask['MONTH'].values(),Mask['BRAND']['pampers'],labels= ['MONTH','pampers-reviewNumber'])
 
 
 
