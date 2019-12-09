@@ -1,7 +1,3 @@
-# import os, sys
-# lib_path = os.path.abspath(os.path.join(RunningDir))
-# sys.path.append(lib_path)
-
 import json
 import numpy as np
 import codecs
@@ -13,6 +9,8 @@ from bert4keras.snippets import sequence_padding, get_all_attributes
 import os
 import pandas as pd
 import shutil
+import matplotlib.pyplot as plt
+import math
 
 locals().update(get_all_attributes(keras.layers))
 set_gelu('tanh')
@@ -118,7 +116,7 @@ class Evaluator(keras.callbacks.Callback):
               (val_acc, self.best_val_acc, test_acc))
 
 
-# 加载预训练模型
+# Load Pre-Trained model
 bert = build_bert_model(
     config_path=config_path,
     checkpoint_path=checkpoint_path,
@@ -126,13 +124,10 @@ bert = build_bert_model(
     albert=True,
     return_keras_model=False,
 )
-
 output = Dropout(rate=0.1)(bert.model.output)
 output = Dense(units=2,
                activation='softmax',
                kernel_initializer=bert.initializer)(output)
-
-
 
 model = keras.models.Model(bert.model.input, output)
 model.summary()
@@ -146,27 +141,16 @@ model.compile(
     metrics=['accuracy'],
 )
 
+# Load FineTune-1st weights
 model.load_weights(fineTuneWeights)
 
 
-
-
-
-# evaluator = Evaluator()
-
-# test_generator = data_generator(test_data)
-
-
-# print(u'final test acc: %05f\n' % (evaluate(test_generator)))
-
-
-# test_generator = data_generator(test_data,predictOnly = True)
+# Load dataset
 DFraw = pd.read_excel(targetData)
 
-
+# ust fintTune-1st model to make testPred(default 1000 rows)
 Review = DFraw.iloc[0:testPredLen,0].values
 test_generator = data_generator(Review,predictOnly = True)
-
 preds = []
 for x in test_generator:
     # possibillity for positive
@@ -177,7 +161,7 @@ DFresult = pd.DataFrame(columns = ['REVIEW','SENTIMENT'])
 DFresult = DFresult.assign(REVIEW = Review, SENTIMENT = preds)
 DFresult.to_csv('testPredResult.csv')
 
-
+# dict for fineTune to make code cleaner.
 DKft2 = {
     'negative':{
         'polarity':-1,
@@ -199,7 +183,7 @@ DKft2 = {
     }
 }
 
-
+# copy result for manually annotation.
 for pola in DKft2:
     DFfocus = DFresult[DFresult['SENTIMENT']*DKft2[pola]['polarity']>0.5*DKft2[pola]['polarity']]
     DFfocus.to_csv(DKft2[pola]['testPredFile'])
@@ -208,10 +192,17 @@ for pola in DKft2:
 
 ballanceL = min(DKft2['negative']['length'],DKft2['positive']['length'])
 
+# here, mannually annotate output data.
+# .
+# method: if the preds data is wrong(eg. one is negative emotion while preds result exceeds 0.5), add a negative sign to the result.
+# ...
+# ....
+# .. time ticking ....
+# .....
+# ..
+# .
 
-
-
-# AFTER manually annotated data, go on
+# NOTICE: ONLY AFTER manually annotated data, go on
 for pola in DKft2:
     DKft2[pola]['DFadj'] = pd.read_csv(DKft2[pola]['manualAnnotatedFile'],index_col = 0)
     DKft2[pola]['DFadj'] = DKft2[pola]['DFadj'].iloc[:ballanceL,:]
@@ -224,6 +215,7 @@ for pola in DKft2:
     DKft2[pola]['DFadj'].loc[int(ballanceL*trainTestRatio):,:].to_csv(DKft2[pola]['FT2testFile'],header = None, index = None, sep='\t')
 
 
+# Generate Train and test/validate data. (for the reason of limited time, I use valid_data = test_data here)
 DF_FT2_Train = pd.concat([DKft2['negative']['DFadj'].iloc[:int(ballanceL*trainTestRatio),:],
     DKft2['positive']['DFadj'].iloc[:int(ballanceL*trainTestRatio),:]],
     ignore_index=True)
@@ -233,29 +225,26 @@ DF_FT2_Test = pd.concat([DKft2['negative']['DFadj'].iloc[int(ballanceL*trainTest
 DF_FT2_Train.to_csv('FT2_Train.txt',header = None, index = None, sep='\t')
 DF_FT2_Test.to_csv('FT2_Test.txt',header = None, index = None, sep='\t')
 
-
+# Load
 train_data = load_data('FT2_Train.txt')
 valid_data = load_data('FT2_Test.txt')
 test_data = load_data('FT2_Test.txt')
 train_generator = data_generator(train_data)
 valid_generator = data_generator(valid_data)
 test_generator = data_generator(test_data)
-
 evaluator = Evaluator(valid_generator = valid_generator,test_generator = test_generator,weightsSavePath='FT2.weights')
+# train model
 model.fit_generator(train_generator.forfit(),
                     steps_per_epoch=len(train_generator),
                     epochs=50,
                     callbacks=[evaluator])
 
-
+#Test result:
 model.load_weights('FT2.weights')
-# model.load_weights(fineTuneWeights)
 print(u'final test acc: %05f\n' % (evaluate(test_generator)))
 
 
-
-
-
+# Pred the whole data set:
 finalReview = DFraw.iloc[:,0].values
 finalTest_generator = data_generator(finalReview,predictOnly = True,batch_size=32)
 
@@ -266,13 +255,12 @@ for x in finalTest_generator:
     preds.extend(y_pred)
     print('Prediction Progress:{:.2%}'.format(len(preds)/finalReview.shape[0]),end = '\r')
 
+# Save reulsts and analyse:
 DFprocessed = DFraw.copy()
 DFprocessed['SENTIMENT'] = preds
+DFprocessed.to_csv('processed.csv')
 
-
-
-
-
+# use mask array to show the statistics, it's a very convinient and fast way.
 Mask = {}
 for col in ('ONLINE_STORE', 'BRAND', 'YEAR','MONTH'):
     Mask[col] = {}
@@ -286,7 +274,7 @@ for col in ('ONLINE_STORE', 'BRAND', 'YEAR','MONTH'):
         print(item)
         Mask[col][item] = DFprocessed[col] == item
 
-
+# delete wrong annotation
 del Mask['YEAR'][1900]
 
 Mask['SENTIMENT'] = {}
@@ -294,9 +282,8 @@ Mask['SENTIMENT']['positive'] = DFprocessed['SENTIMENT'] > sentiThresh
 Mask['SENTIMENT']['negative'] = DFprocessed['SENTIMENT'] < 1 - sentiThresh
 Mask['SENTIMENT']['neutral'] = (DFprocessed['SENTIMENT'] > 1 - sentiThresh)&(DFprocessed['SENTIMENT'] < sentiThresh)
 
-import matplotlib.pyplot as plt
-import math
 
+# define a plot function that accepts masks as arguments. Make the analysis fast and clear.
 def pltmask(xList,xMasks,yMask,labels = None,width = 0.2,saveFile=True):
     y = []
     for i in xMasks:
@@ -309,18 +296,19 @@ def pltmask(xList,xMasks,yMask,labels = None,width = 0.2,saveFile=True):
         plt.savefig(labels[0]+'-'+labels[1]+'.png')
     plt.show()
 
+
+# some shallow analysis:
 pltmask(Mask['BRAND'].keys(),Mask['BRAND'].values(),Mask['SENTIMENT']['positive'],labels= ['brand','positive'])
 
 pltmask(Mask['BRAND'].keys(),Mask['BRAND'].values(),Mask['SENTIMENT']['negative'],labels= ['brand','negative'])
 
 pltmask(Mask['ONLINE_STORE'].keys(),Mask['ONLINE_STORE'].values(),Mask['SENTIMENT']['negative'],labels= ['ONLINE_STORE','negative'])
 
-
 pltmask(Mask['YEAR'].keys(),Mask['YEAR'].values(),Mask['SENTIMENT']['negative']*Mask['BRAND']['pampers'],labels= ['YEAR','pampers-negative'])
 
 
 
-DFprocessed.to_csv('processed.csv')
+
 
 
 # shutil.copy('ADJposResultBK.csv','ADJposResult.csv')
