@@ -13,7 +13,7 @@ overallSentiment.py
 - FineTune 1st
     - source: https://github.com/bojone/bert4keras.git
     - ACC: 0.86 (for the test dataset)
-- FineTUne 2nd: 
+- FineTune 2nd: 
     - Datasets: based on the predicted result by fineTune1 model, manually adjusted 1000 reviews's annotations.
     - ACC: 0.92 (for the test dataset)
 
