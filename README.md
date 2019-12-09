@@ -19,5 +19,6 @@ overallSentiment.py
 
 # Next:
 For the 1st time of doing a NLP project, I've paied too much time in ABSA tech review which leads to no time for further analysis of processed data. So:
+And for my carelessness, I over writed my manually-annotated data once. So I annotated the data sets twice. 
 - [ ] still much (can be easy)to read from the result data .. (keyword analysis, eg.)
 - [ ] Aspect-Based Sentiment Analysis
