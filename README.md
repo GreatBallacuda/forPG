@@ -9,7 +9,7 @@ for the sake of privacy of your datasets, please copy it to datasets/ dir
 # Run:
 overallSentiment.py
 
-# Main methods: DNN-AlBERT(google) + FineTune twice.
+# Main methods: DNN-ALBERT_tiny_zh_google + FineTune twice.
 - FineTune 1st
     - source: https://github.com/bojone/bert4keras.git
     - ACC: 0.86 (for the test dataset)

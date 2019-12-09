@@ -15,6 +15,7 @@ import math
 locals().update(get_all_attributes(keras.layers))
 set_gelu('tanh')
 
+# pre-trained model: albert_tiny_zh_google
 ModelDir = 'models/albert_tiny_zh_google'
 
 
