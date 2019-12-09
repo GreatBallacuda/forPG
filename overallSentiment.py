@@ -285,7 +285,7 @@ Mask['SENTIMENT']['negative'] = DFprocessed['SENTIMENT'] < 1 - sentiThresh
 Mask['SENTIMENT']['neutral'] = (DFprocessed['SENTIMENT'] > 1 - sentiThresh)&(DFprocessed['SENTIMENT'] < sentiThresh)
 
 
-# define a plot function that accepts masks as arguments. Make the analysis fast and clear.
+# define a plot function that accepts masks as arguments. Make the analysis fast, clear and elegant.
 def pltmask(xList,xMasks,yMask,labels = None,width = 0.2,saveFile=True):
     y = []
     for i in xMasks:
