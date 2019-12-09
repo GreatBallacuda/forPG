@@ -1,5 +1,5 @@
 # NOTICE:
-for the sake of privacy of your datasets, please copy it to datasets/ dir
+for the sake of the privacy of your datasets, please copy it to datasets/ dir
 
 # Env requirement: 
 - Python3 

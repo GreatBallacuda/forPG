@@ -191,14 +191,15 @@ for pola in DKft2:
     DKft2[pola]['length'] = DFfocus.shape[0]
     shutil.copy(DKft2[pola]['testPredFile'],DKft2[pola]['manualAnnotatedFile'])
 
+# for the ballance of negative data and positive data, use the shorter part as input lengh of each pole.
 ballanceL = min(DKft2['negative']['length'],DKft2['positive']['length'])
 
 # here, mannually annotate output data.
 # .
-# method: if the preds data is wrong(eg. one is negative emotion while preds result exceeds 0.5), add a negative sign to the result.
+# method/rule: if the preds data is wrong(eg. one is negative emotion while preds result exceeds 0.5), add a negative sign to the result.
 # ...
 # ....
-# .. time ticking ....
+# time ticking ...
 # .....
 # ..
 # .
