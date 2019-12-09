@@ -1,5 +1,5 @@
 # NOTICE:
-for the sake of the privacy of your datasets, please copy it to datasets/ dir
+for the sake of the privacy of your datasets, I deleted from repo. Please copy it to "datasets" dir.
 
 # Highlight:
 - AlBERT works really good. Especially after good fine-tuning.
