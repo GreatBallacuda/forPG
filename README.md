@@ -1,6 +1,10 @@
 # NOTICE:
 for the sake of the privacy of your datasets, please copy it to datasets/ dir
 
+# Highlight:
+- AlBERT works really good. Especially after good fine-tuning.
+- Using Numpy mask array is a good and fast way to analyse cross-section data.
+
 # Env requirement: 
 - Python3 
 - Tesorflow 1.13+ 
