@@ -11,11 +11,11 @@ import pandas as pd
 import shutil
 import matplotlib.pyplot as plt
 import math
+if not os.path.exists('./results/'): os.makedirs('./results/')
 
 locals().update(get_all_attributes(keras.layers))
 set_gelu('tanh')
 
-# pre-trained model: albert_tiny_zh_google
 ModelDir = 'models/albert_tiny_zh_google'
 
 
@@ -191,15 +191,14 @@ for pola in DKft2:
     DKft2[pola]['length'] = DFfocus.shape[0]
     shutil.copy(DKft2[pola]['testPredFile'],DKft2[pola]['manualAnnotatedFile'])
 
-# for the ballance of negative data and positive data, use the shorter part as input lengh of each pole.
 ballanceL = min(DKft2['negative']['length'],DKft2['positive']['length'])
 
 # here, mannually annotate output data.
 # .
-# method/rule: if the preds data is wrong(eg. one is negative emotion while preds result exceeds 0.5), add a negative sign to the result.
+# method: if the preds data is wrong(eg. one is negative emotion while preds result exceeds 0.5), add a negative sign to the result.
 # ...
 # ....
-# time ticking ...
+# .. time ticking ....
 # .....
 # ..
 # .
@@ -260,17 +259,15 @@ for x in finalTest_generator:
 # Save reulsts and analyse:
 DFprocessed = DFraw.copy()
 DFprocessed['SENTIMENT'] = preds
-DFprocessed.to_csv('processed.csv')
+DFprocessed.to_csv('./results/processed.csv')
 
 # use mask array to show the statistics, it's a very convinient and fast way.
 Mask = {}
 for col in ('ONLINE_STORE', 'BRAND', 'YEAR','MONTH'):
     Mask[col] = {}
-    # string data:
     if DFprocessed[col].dtype == 'object':
         DFprocessed[col] = DFprocessed[col].str.lower()
         values = list(DFprocessed[col].unique())
-    # numerical data:
     else:
         values = list(DFprocessed[col].unique())
         list.sort(values)
@@ -287,7 +284,7 @@ Mask['SENTIMENT']['negative'] = DFprocessed['SENTIMENT'] < 1 - sentiThresh
 Mask['SENTIMENT']['neutral'] = (DFprocessed['SENTIMENT'] > 1 - sentiThresh)&(DFprocessed['SENTIMENT'] < sentiThresh)
 
 
-# define a plot function that accepts masks as arguments. Make the analysis fast, clear and elegant.
+# define a plot function that accepts masks as arguments. Make the analysis fast and clear.
 def pltmask(xList,xMasks,yMask,labels = None,width = 0.2,saveFile=True):
     y = []
     for i in xMasks:
@@ -301,7 +298,7 @@ def pltmask(xList,xMasks,yMask,labels = None,width = 0.2,saveFile=True):
     plt.show()
 
 
-# some shallow/apparent analysis:
+# some shallow analysis:
 pltmask(Mask['BRAND'].keys(),Mask['BRAND'].values(),Mask['SENTIMENT']['positive'],labels= ['brand','positive'])
 
 pltmask(Mask['BRAND'].keys(),Mask['BRAND'].values(),Mask['SENTIMENT']['negative'],labels= ['brand','negative'])
@@ -309,10 +306,6 @@ pltmask(Mask['BRAND'].keys(),Mask['BRAND'].values(),Mask['SENTIMENT']['negative'
 pltmask(Mask['ONLINE_STORE'].keys(),Mask['ONLINE_STORE'].values(),Mask['SENTIMENT']['negative'],labels= ['ONLINE_STORE','negative'])
 
 pltmask(Mask['YEAR'].keys(),Mask['YEAR'].values(),Mask['SENTIMENT']['negative']*Mask['BRAND']['pampers'],labels= ['YEAR','pampers-negative'])
-
-pltmask(Mask['MONTH'].keys(),Mask['MONTH'].values(),Mask['SENTIMENT']['negative']*Mask['BRAND']['pampers'],labels= ['MONTH','pampers-negative'])
-
-pltmask(Mask['MONTH'].keys(),Mask['MONTH'].values(),Mask['BRAND']['pampers'],labels= ['MONTH','pampers-reviewNumber'])
 
 
 
